@@ -297,7 +297,7 @@ export function SignalPanel() {
           </div>
 
           {/* ── OI walls ── */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <OIWallBar walls={data.options.topCallWalls} side="call" />
             <OIWallBar walls={data.options.topPutWalls}  side="put"  />
           </div>

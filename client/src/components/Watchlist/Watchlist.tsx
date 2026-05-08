@@ -11,7 +11,7 @@ export function Watchlist() {
     useTerminalStore();
 
   return (
-    <div className="flex flex-col h-full bg-terminal-panel border-r border-terminal-border w-52 shrink-0">
+    <div className="flex flex-col h-full bg-terminal-panel border-r border-terminal-border w-full md:w-52 md:shrink-0">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-terminal-border">
         <span className="text-terminal-dim text-xs tracking-widest font-medium">WATCHLIST</span>

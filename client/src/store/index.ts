@@ -18,7 +18,7 @@ interface TerminalStore {
   watchlist: WatchlistItem[];
   selectedSymbol: string;
   selectedToken: number | null;
-  activePanel: "chart" | "options" | "signals" | "news";
+  activePanel: "chart" | "options" | "signals" | "news" | "watchlist";
 
   setAppToken: (token: string | null) => void;
   setAuth: (authenticated: boolean, profile?: any) => void;
@@ -26,7 +26,7 @@ interface TerminalStore {
   setSelectedSymbol: (symbol: string, token: number) => void;
   addToWatchlist: (item: WatchlistItem) => void;
   removeFromWatchlist: (symbol: string) => void;
-  setActivePanel: (panel: "chart" | "options" | "signals" | "news") => void;
+  setActivePanel: (panel: "chart" | "options" | "signals" | "news" | "watchlist") => void;
 }
 
 const DEFAULT_WATCHLIST: WatchlistItem[] = [

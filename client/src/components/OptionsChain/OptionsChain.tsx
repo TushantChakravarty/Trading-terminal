@@ -269,7 +269,7 @@ export function OptionsChain() {
       {/* ── Chain table ── */}
       {data && !isLoading && (
         <div className="flex-1 overflow-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full min-w-[640px] border-collapse">
             <thead className="sticky top-0 bg-terminal-header z-10 border-b border-terminal-border">
               <tr>
                 {/* CALL side */}

@@ -79,11 +79,13 @@ export function TopBar() {
         ● {STATUS_LABELS[status]}
       </div>
 
-      {/* Index badges */}
-      <IndexBadge label="NIFTY" token={256265} />
-      <IndexBadge label="BANKNIFTY" token={260105} />
-      <IndexBadge label="SENSEX" token={265} />
-      <IndexBadge label="VIX" token={264969} />
+      {/* Index badges — hidden on mobile */}
+      <div className="hidden md:flex">
+        <IndexBadge label="NIFTY" token={256265} />
+        <IndexBadge label="BANKNIFTY" token={260105} />
+        <IndexBadge label="SENSEX" token={265} />
+        <IndexBadge label="VIX" token={264969} />
+      </div>
 
       {/* Spacer */}
       <div className="flex-1" />
