@@ -15,11 +15,15 @@ import signalsRouter from "./routes/signals";
 
 const app = express();
 
-const allowedOrigins = config.clientUrl.split(",").map((s) => s.trim());
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "https://lighthearted-haupia-9c36ee.netlify.app",
+  ...config.clientUrl.split(",").map((s) => s.trim()).filter(Boolean),
+];
+
 app.use(cors({
   origin: (origin, cb) => {
-    // allow server-to-server / curl (no origin) and any listed client URL
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) cb(null, true);
     else cb(new Error(`CORS: ${origin} not allowed`));
   },
   credentials: true,
