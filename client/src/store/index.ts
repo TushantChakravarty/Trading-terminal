@@ -1,7 +1,17 @@
 import { create } from "zustand";
+import axios from "axios";
 import { Tick, WatchlistItem } from "../types";
 
+const TOKEN_KEY = "app_token";
+
+// Apply stored token to axios on module load (survives page refresh)
+const _savedToken = localStorage.getItem(TOKEN_KEY);
+if (_savedToken) {
+  axios.defaults.headers.common["x-app-token"] = _savedToken;
+}
+
 interface TerminalStore {
+  appToken: string | null;
   isAuthenticated: boolean;
   profile: any | null;
   ticks: Record<number, Tick>;
@@ -10,6 +20,7 @@ interface TerminalStore {
   selectedToken: number | null;
   activePanel: "chart" | "options" | "signals" | "news";
 
+  setAppToken: (token: string | null) => void;
   setAuth: (authenticated: boolean, profile?: any) => void;
   updateTicks: (ticks: Tick[]) => void;
   setSelectedSymbol: (symbol: string, token: number) => void;
@@ -30,6 +41,7 @@ const DEFAULT_WATCHLIST: WatchlistItem[] = [
 ];
 
 export const useTerminalStore = create<TerminalStore>((set) => ({
+  appToken: _savedToken,
   isAuthenticated: false,
   profile: null,
   ticks: {},
@@ -37,6 +49,17 @@ export const useTerminalStore = create<TerminalStore>((set) => ({
   selectedSymbol: "NSE:NIFTY 50",
   selectedToken: 256265,
   activePanel: "chart",
+
+  setAppToken: (token) => {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      axios.defaults.headers.common["x-app-token"] = token;
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+      delete axios.defaults.headers.common["x-app-token"];
+    }
+    set({ appToken: token });
+  },
 
   setAuth: (authenticated, profile = null) =>
     set({ isAuthenticated: authenticated, profile }),

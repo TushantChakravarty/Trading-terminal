@@ -1,4 +1,5 @@
-import { Activity, LogIn, User } from "lucide-react";
+import { Activity, LogIn, LogOut, User } from "lucide-react";
+import axios from "axios";
 import { useTerminalStore } from "../../store";
 import { MarketStatus } from "../../types";
 
@@ -58,8 +59,12 @@ function IndexBadge({ label, token }: IndexBadgeProps) {
 }
 
 export function TopBar() {
-  const { isAuthenticated, profile } = useTerminalStore();
+  const { isAuthenticated, profile, setAppToken } = useTerminalStore();
   const status = getMarketStatus();
+
+  function handleLogout() {
+    setAppToken(null);
+  }
 
   return (
     <div className="h-10 bg-terminal-header border-b border-terminal-border flex items-center px-2 shrink-0 select-none">
@@ -98,6 +103,15 @@ export function TopBar() {
           Login with Zerodha
         </a>
       )}
+
+      {/* App logout */}
+      <button
+        onClick={handleLogout}
+        title="Logout"
+        className="ml-2 p-1.5 text-terminal-muted hover:text-terminal-red transition-colors"
+      >
+        <LogOut size={13} />
+      </button>
     </div>
   );
 }

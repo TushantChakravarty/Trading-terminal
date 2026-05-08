@@ -9,6 +9,7 @@ export function useWebSocket() {
   const { updateTicks, setAuth, isAuthenticated } = useTerminalStore();
 
   useEffect(() => {
+
     const WS_URL = `ws://${window.location.hostname}:3001/ws`;
 
     function connect() {

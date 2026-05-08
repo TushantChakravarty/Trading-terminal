@@ -81,8 +81,24 @@ class KiteService {
     return this.getKC().getHistoricalData(instrumentToken, interval, from, to, false);
   }
 
+  private instrumentsCache: Map<string, { data: any[]; at: number }> = new Map();
+  private readonly INSTRUMENTS_TTL = 60 * 60 * 1000; // 60 minutes
+
   async getInstruments(exchange: string): Promise<any[]> {
-    return this.getKC().getInstruments([exchange]);
+    const cached = this.instrumentsCache.get(exchange);
+    if (cached && Date.now() - cached.at < this.INSTRUMENTS_TTL) {
+      return cached.data;
+    }
+    console.log(`[kite] fetching instruments for ${exchange}...`);
+    const data = await this.getKC().getInstruments([exchange]);
+    this.instrumentsCache.set(exchange, { data, at: Date.now() });
+    console.log(`[kite] cached ${data.length} ${exchange} instruments`);
+    return data;
+  }
+
+  clearInstrumentsCache(exchange?: string) {
+    if (exchange) this.instrumentsCache.delete(exchange);
+    else this.instrumentsCache.clear();
   }
 }
 

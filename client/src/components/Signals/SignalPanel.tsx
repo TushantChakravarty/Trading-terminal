@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { TrendingUp, TrendingDown, Minus, RefreshCw, AlertTriangle } from "lucide-react";
+import { useTerminalStore } from "../../store";
 
 const UNDERLYINGS = ["NIFTY", "BANKNIFTY", "FINNIFTY"];
 
@@ -187,13 +188,16 @@ function SuggestionBox({ suggestion, direction }: { suggestion: SignalResult["su
 
 export function SignalPanel() {
   const [underlying, setUnderlying] = useState("NIFTY");
+  const isAuthenticated = useTerminalStore((s) => s.isAuthenticated);
 
   const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } =
-    useQuery<SignalResult>({
+    useQuery<SignalResult, AxiosError<{ error: string }>>({
       queryKey: ["signal", underlying],
       queryFn: () => axios.get(`/api/signals/${underlying}`).then((r) => r.data),
+      enabled: isAuthenticated,
       staleTime: 60_000,
       refetchInterval: 90_000,
+      retry: 1,
     });
 
   const cfg = data ? DIRECTION_CONFIG[data.direction] : DIRECTION_CONFIG.NEUTRAL;
@@ -232,16 +236,31 @@ export function SignalPanel() {
         </button>
       </div>
 
-      {isLoading && (
+      {!isAuthenticated && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4">
+          <span className="text-terminal-dim text-sm">Signal unavailable</span>
+          <span className="text-terminal-muted text-xs text-center">Login with Zerodha to enable signal computation</span>
+        </div>
+      )}
+
+      {isAuthenticated && isLoading && (
         <div className="flex-1 flex items-center justify-center text-terminal-dim text-sm">
           Computing signal...
         </div>
       )}
 
-      {error && (
+      {isAuthenticated && error && (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4">
-          <span className="text-terminal-red text-sm">Signal unavailable</span>
-          <span className="text-terminal-muted text-xs text-center">Login with Zerodha to enable signal computation</span>
+          <span className="text-terminal-red text-sm">Signal computation failed</span>
+          <span className="text-terminal-muted text-xs text-center">
+            {error.response?.data?.error ?? error.message}
+          </span>
+          <button
+            onClick={() => refetch()}
+            className="mt-2 text-[10px] text-terminal-blue hover:opacity-80 flex items-center gap-1"
+          >
+            <RefreshCw size={10} /> Retry
+          </button>
         </div>
       )}
 

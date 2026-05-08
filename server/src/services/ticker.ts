@@ -13,8 +13,13 @@ class TickerService {
     ws.on("close", () => this.clients.delete(ws));
     ws.on("message", (raw) => this.handleClientMessage(ws, raw.toString()));
 
-    // Send currently subscribed tokens list to new client
     ws.send(JSON.stringify({ type: "subscribed_tokens", data: [...this.subscribedTokens] }));
+
+    // If a Kite session is already active (restored from DB or from a prior login),
+    // tell this client immediately so it doesn't wait for the 30s REST poll
+    if (kiteService.isAuthenticated()) {
+      ws.send(JSON.stringify({ type: "authenticated", data: { profile: kiteService.getProfile() } }));
+    }
   }
 
   private handleClientMessage(ws: WebSocket, raw: string) {

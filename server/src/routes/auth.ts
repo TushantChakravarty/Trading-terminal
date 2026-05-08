@@ -1,8 +1,21 @@
 import { Router, Request, Response } from "express";
 import { kiteService } from "../services/kite";
 import { tickerService } from "../services/ticker";
+import { config } from "../config";
+import { makeAppToken, saveAppSession } from "../middleware/appAuth";
 
 const router = Router();
+
+// Terminal app login (checked against APP_USERNAME / APP_PASSWORD in .env)
+router.post("/app-login", async (req: Request, res: Response) => {
+  const { username, password } = req.body as { username?: string; password?: string };
+  if (username === config.app.username && password === config.app.password) {
+    const token = makeAppToken(username, password);
+    await saveAppSession();
+    return res.json({ token });
+  }
+  res.status(401).json({ error: "Invalid credentials" });
+});
 
 // Step 1: Redirect browser to Zerodha login
 router.get("/login", (_req: Request, res: Response) => {
@@ -30,6 +43,12 @@ router.get("/callback", async (req: Request, res: Response) => {
       264969,  // INDIA VIX
     ];
     tickerService.subscribe(DEFAULT_TOKENS);
+
+    // Notify all connected browser clients immediately
+    tickerService.broadcast({
+      type: "authenticated",
+      data: { profile: kiteService.getProfile() },
+    });
 
     res.redirect("http://localhost:5173?auth=success");
   } catch (err: any) {

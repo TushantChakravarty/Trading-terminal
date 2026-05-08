@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { OptionsChainData, OptionLeg, OptionStrike } from "../../types";
+import { useTerminalStore } from "../../store";
 
 const UNDERLYINGS = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX"];
 
@@ -138,15 +139,18 @@ function ChainRow({
 export function OptionsChain() {
   const [underlying, setUnderlying] = useState("NIFTY");
   const [selectedExpiry, setSelectedExpiry] = useState<string | null>(null);
+  const isAuthenticated = useTerminalStore((s) => s.isAuthenticated);
 
-  const { data, isLoading, error } = useQuery<OptionsChainData>({
+  const { data, isLoading, error, refetch } = useQuery<OptionsChainData, AxiosError<{ error: string }>>({
     queryKey: ["options", underlying, selectedExpiry],
     queryFn: () =>
       axios
         .get(`/api/options/${underlying}${selectedExpiry ? `?expiry=${selectedExpiry}` : ""}`)
         .then((r) => r.data),
+    enabled: isAuthenticated,
     staleTime: 30_000,
     refetchInterval: 30_000,
+    retry: 1,
   });
 
   // Derived stats
@@ -234,16 +238,31 @@ export function OptionsChain() {
         </div>
       )}
 
-      {isLoading && (
+      {!isAuthenticated && (
+        <div className="flex-1 flex items-center justify-center flex-col gap-2">
+          <span className="text-terminal-dim text-sm">Options chain unavailable</span>
+          <span className="text-terminal-muted text-xs">Login with Zerodha to access live F&O data</span>
+        </div>
+      )}
+
+      {isAuthenticated && isLoading && (
         <div className="flex-1 flex items-center justify-center text-terminal-dim text-sm">
           Loading options chain...
         </div>
       )}
 
-      {error && (
-        <div className="flex-1 flex items-center justify-center flex-col gap-2">
+      {isAuthenticated && error && (
+        <div className="flex-1 flex items-center justify-center flex-col gap-3">
           <span className="text-terminal-red text-sm">Could not load options chain</span>
-          <span className="text-terminal-muted text-xs">Login with Zerodha to access live F&O data</span>
+          <span className="text-terminal-muted text-xs text-center px-8">
+            {error.response?.data?.error ?? error.message}
+          </span>
+          <button
+            onClick={() => refetch()}
+            className="text-[10px] text-terminal-blue hover:opacity-80"
+          >
+            Retry
+          </button>
         </div>
       )}
 

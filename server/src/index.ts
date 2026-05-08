@@ -6,6 +6,7 @@ import { config } from "./config";
 import { connectDB } from "./db/connection";
 import { kiteService } from "./services/kite";
 import { tickerService } from "./services/ticker";
+import { requireAppAuth, initAppSession } from "./middleware/appAuth";
 import authRouter from "./routes/auth";
 import quotesRouter from "./routes/quotes";
 import optionsRouter from "./routes/options";
@@ -16,6 +17,14 @@ const app = express();
 
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+
+// Public auth routes (browser redirects that can't carry x-app-token)
+const PUBLIC_PATHS = new Set(["/auth/app-login", "/auth/login", "/auth/callback"]);
+
+app.use("/api", (req, res, next) => {
+  if (PUBLIC_PATHS.has(req.path)) return next();
+  requireAppAuth(req, res, next);
+});
 
 app.use("/api/auth",    authRouter);
 app.use("/api/quotes",  quotesRouter);
@@ -37,7 +46,10 @@ async function start() {
   // 1. Connect MongoDB
   await connectDB();
 
-  // 2. Restore today's Kite session (if any)
+  // 2. Init app session token in DB
+  await initAppSession();
+
+  // 3. Restore today's Kite session (if any)
   await kiteService.restoreSession();
 
   // 3. If already authenticated, reconnect the ticker

@@ -5,6 +5,7 @@ import { CandleChart } from "./components/Chart/CandleChart";
 import { OptionsChain } from "./components/OptionsChain/OptionsChain";
 import { NewsFeed } from "./components/NewsFeed/NewsFeed";
 import { SignalPanel } from "./components/Signals/SignalPanel";
+import { LoginPage } from "./components/Login/LoginPage";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useAuthStatus } from "./hooks/useAuthStatus";
 import { useTerminalStore } from "./store";
@@ -57,13 +58,14 @@ function AuthBanner() {
   );
 }
 
-export default function App() {
+// All terminal hooks live here — this component only mounts after app login,
+// so hooks never run on the login page and WebSocket/queries start fresh.
+function Terminal() {
   useAuthStatus();
   const { status, subscribe } = useWebSocket();
   const { watchlist } = useTerminalStore();
   const activePanel = useTerminalStore((s) => s.activePanel);
 
-  // Subscribe watchlist tokens on connect
   useEffect(() => {
     if (status === "connected") {
       const tokens = watchlist.map((w) => w.token);
@@ -71,11 +73,9 @@ export default function App() {
     }
   }, [status, watchlist.length]);
 
-  // Handle auth redirect params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const auth = params.get("auth");
-    if (auth) {
+    if (params.get("auth")) {
       window.history.replaceState({}, "", "/");
     }
   }, []);
@@ -86,10 +86,8 @@ export default function App() {
       <TopBar />
 
       <div className="flex flex-1 min-h-0">
-        {/* Left: Watchlist */}
         <Watchlist />
 
-        {/* Main area */}
         <div className="flex flex-col flex-1 min-w-0">
           <PanelTabs />
 
@@ -102,7 +100,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* WS status dot */}
       <div className="absolute bottom-2 right-2 flex items-center gap-1.5 text-[10px] text-terminal-muted">
         <span
           className={`w-1.5 h-1.5 rounded-full ${
@@ -117,4 +114,9 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+export default function App() {
+  const appToken = useTerminalStore((s) => s.appToken);
+  return appToken ? <Terminal /> : <LoginPage />;
 }

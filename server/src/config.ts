@@ -12,4 +12,8 @@ export const config = {
     apiSecret:   process.env.KITE_API_SECRET || "",
     redirectUrl: process.env.KITE_REDIRECT_URL || "http://localhost:3001/api/auth/callback",
   },
+  app: {
+    username: process.env.APP_USERNAME || "",
+    password: process.env.APP_PASSWORD || "",
+  },
 };
