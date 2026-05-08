@@ -10,7 +10,8 @@ export function useWebSocket() {
 
   useEffect(() => {
 
-    const WS_URL = `ws://${window.location.hostname}:3001/ws`;
+    const WS_URL = import.meta.env.VITE_WS_URL ||
+      `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`;
 
     function connect() {
       setStatus("connecting");

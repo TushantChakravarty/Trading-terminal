@@ -7,12 +7,13 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:3001",
+        target: "https://trading-terminal-l3jb.onrender.com",
         changeOrigin: true,
       },
       "/ws": {
-        target: "ws://localhost:3001",
+        target: "wss://trading-terminal-l3jb.onrender.com",
         ws: true,
+        changeOrigin: true,
       },
     },
   },

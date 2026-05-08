@@ -4,9 +4,10 @@ import path from "path";
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 export const config = {
-  port:     parseInt(process.env.PORT || "3001"),
-  nodeEnv:  process.env.NODE_ENV || "development",
-  mongoUri: process.env.MONGODB_URI || "mongodb://localhost:27017/trading-terminal",
+  port:      parseInt(process.env.PORT || "3001"),
+  nodeEnv:   process.env.NODE_ENV || "development",
+  mongoUri:  process.env.MONGODB_URI || "mongodb://localhost:27017/trading-terminal",
+  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
   kite: {
     apiKey:      process.env.KITE_API_KEY || "",
     apiSecret:   process.env.KITE_API_SECRET || "",

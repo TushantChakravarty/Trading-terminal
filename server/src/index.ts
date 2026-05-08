@@ -15,7 +15,15 @@ import signalsRouter from "./routes/signals";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+const allowedOrigins = config.clientUrl.split(",").map((s) => s.trim());
+app.use(cors({
+  origin: (origin, cb) => {
+    // allow server-to-server / curl (no origin) and any listed client URL
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error(`CORS: ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Public auth routes (browser redirects that can't carry x-app-token)

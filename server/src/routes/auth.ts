@@ -4,6 +4,8 @@ import { tickerService } from "../services/ticker";
 import { config } from "../config";
 import { makeAppToken, saveAppSession } from "../middleware/appAuth";
 
+const CLIENT = config.clientUrl;
+
 const router = Router();
 
 // Terminal app login (checked against APP_USERNAME / APP_PASSWORD in .env)
@@ -28,7 +30,7 @@ router.get("/callback", async (req: Request, res: Response) => {
   const { request_token, status } = req.query as Record<string, string>;
 
   if (status !== "success" || !request_token) {
-    return res.redirect("http://localhost:5173?auth=failed");
+    return res.redirect(`${CLIENT}?auth=failed`);
   }
 
   try {
@@ -50,10 +52,10 @@ router.get("/callback", async (req: Request, res: Response) => {
       data: { profile: kiteService.getProfile() },
     });
 
-    res.redirect("http://localhost:5173?auth=success");
+    res.redirect(`${CLIENT}?auth=success`);
   } catch (err: any) {
     console.error("[auth] session error:", err.message);
-    res.redirect("http://localhost:5173?auth=failed");
+    res.redirect(`${CLIENT}?auth=failed`);
   }
 });
 
