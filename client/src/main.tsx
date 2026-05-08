@@ -4,7 +4,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import axios from "axios";
 import App from "./App";
 import { useTerminalStore } from "./store";
+import { SERVER } from "./lib/server";
 import "./index.css";
+
+// Prepend Render server to every relative /api call
+axios.interceptors.request.use((config) => {
+  if (config.url?.startsWith("/")) {
+    config.url = `${SERVER}${config.url}`;
+  }
+  return config;
+});
 
 // On a 401, clear the stale token — Zustand state update triggers re-render to LoginPage
 axios.interceptors.response.use(

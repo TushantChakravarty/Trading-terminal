@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTerminalStore } from "../store";
+import { WS_SERVER } from "../lib/server";
 
 type WsStatus = "connecting" | "connected" | "disconnected";
 
@@ -10,8 +11,7 @@ export function useWebSocket() {
 
   useEffect(() => {
 
-    const WS_URL = import.meta.env.VITE_WS_URL ||
-      `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws`;
+    const WS_URL = WS_SERVER;
 
     function connect() {
       setStatus("connecting");

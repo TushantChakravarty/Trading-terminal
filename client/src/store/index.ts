@@ -4,11 +4,6 @@ import { Tick, WatchlistItem } from "../types";
 
 const TOKEN_KEY = "app_token";
 
-// In production VITE_API_URL points to Render; in dev it's empty and Vite proxy handles routing
-if (import.meta.env.VITE_API_URL) {
-  axios.defaults.baseURL = import.meta.env.VITE_API_URL;
-}
-
 // Apply stored token to axios on module load (survives page refresh)
 const _savedToken = localStorage.getItem(TOKEN_KEY);
 if (_savedToken) {
