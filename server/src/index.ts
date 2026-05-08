@@ -17,7 +17,7 @@ const app = express();
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
-  "https://lighthearted-haupia-9c36ee.netlify.app",
+  "trading-terminal.netlify.app",
   ...config.clientUrl.split(",").map((s) => s.trim()).filter(Boolean),
 ];
 
