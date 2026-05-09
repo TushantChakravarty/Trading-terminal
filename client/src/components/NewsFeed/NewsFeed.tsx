@@ -7,17 +7,23 @@ import { NewsItem, NewsCategory, ImpactLevel } from "../../types";
 // ── Config ───────────────────────────────────────────────────────────────────
 
 const CATEGORIES: { id: NewsCategory | "ALL"; label: string }[] = [
-  { id: "ALL", label: "All" },
-  { id: "RBI", label: "RBI" },
-  { id: "MACRO", label: "Macro" },
-  { id: "GLOBAL", label: "Global" },
+  { id: "ALL",       label: "All"       },
+  { id: "WAR",       label: "⚔ War"    },
+  { id: "OIL",       label: "🛢 Oil"   },
+  { id: "HEALTH",    label: "🦠 Health" },
+  { id: "GLOBAL",    label: "Global"    },
+  { id: "RBI",       label: "RBI"       },
+  { id: "MACRO",     label: "Macro"     },
+  { id: "MARKETS",   label: "Markets"   },
   { id: "CORPORATE", label: "Corporate" },
-  { id: "BUDGET", label: "Budget" },
-  { id: "MARKETS", label: "Markets" },
-  { id: "SECTOR", label: "Sector" },
+  { id: "SECTOR",    label: "Sector"    },
+  { id: "BUDGET",    label: "Budget"    },
 ];
 
 const CATEGORY_COLORS: Record<NewsCategory, string> = {
+  WAR:       "bg-red-900/40 text-red-300 border-red-700/50",
+  OIL:       "bg-amber-900/30 text-amber-300 border-amber-700/40",
+  HEALTH:    "bg-emerald-900/30 text-emerald-300 border-emerald-700/40",
   RBI:       "bg-blue-500/20 text-blue-300 border-blue-500/40",
   MACRO:     "bg-purple-500/20 text-purple-300 border-purple-500/40",
   GLOBAL:    "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
@@ -35,6 +41,7 @@ const IMPACT_CONFIG: Record<ImpactLevel, { label: string; cls: string; dot: stri
 };
 
 const SOURCE_COLORS: Record<string, string> = {
+  // Indian RSS
   "ET Markets":        "text-orange-400",
   "ET Economy":        "text-orange-300",
   Moneycontrol:        "text-blue-400",
@@ -45,6 +52,18 @@ const SOURCE_COLORS: Record<string, string> = {
   "Financial Express": "text-green-400",
   "CNBC TV18":         "text-cyan-400",
   "Reuters India":     "text-red-400",
+  // NewsAPI global sources
+  Reuters:             "text-red-400",
+  "BBC News":          "text-blue-400",
+  Bloomberg:           "text-terminal-blue",
+  "The Guardian":      "text-cyan-400",
+  "Associated Press":  "text-orange-400",
+  "Financial Times":   "text-yellow-400",
+  "Al Jazeera English":"text-amber-400",
+  "CNN":               "text-red-300",
+  "The New York Times":"text-gray-300",
+  "CNBC":              "text-cyan-300",
+  "Axios":             "text-purple-300",
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

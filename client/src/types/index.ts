@@ -82,7 +82,7 @@ export interface FuturesInstrument {
   expiry: string;
 }
 
-export type NewsCategory = "RBI" | "MACRO" | "GLOBAL" | "CORPORATE" | "MARKETS" | "BUDGET" | "SECTOR" | "GENERAL";
+export type NewsCategory = "RBI" | "MACRO" | "GLOBAL" | "CORPORATE" | "MARKETS" | "BUDGET" | "SECTOR" | "WAR" | "OIL" | "HEALTH" | "GENERAL";
 export type ImpactLevel = "HIGH" | "MEDIUM" | "LOW";
 
 export interface NewsItem {
