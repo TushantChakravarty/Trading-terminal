@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { ExternalLink, RefreshCw, Clock, TrendingUp } from "lucide-react";
 import { NewsItem, NewsCategory, ImpactLevel } from "../../types";
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -165,6 +165,7 @@ function StatsBar({ items }: { items: NewsItem[] }) {
 export function NewsFeed() {
   const [activeCategory, setActiveCategory] = useState<NewsCategory | "ALL">("ALL");
   const [impactFilter, setImpactFilter]     = useState<ImpactLevel | "ALL">("ALL");
+  const [sortBy, setSortBy]                 = useState<"impact" | "time">("impact");
   const [search, setSearch]                 = useState("");
 
   const { data, isLoading, refetch, isFetching, dataUpdatedAt } = useQuery<NewsItem[]>({
@@ -187,17 +188,17 @@ export function NewsFeed() {
     });
   }, [data, activeCategory, impactFilter, search]);
 
-  // Sort: HIGH impact first, then by date
-  const sorted = useMemo(
-    () =>
-      [...filtered].sort((a, b) => {
-        const impactOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-        if (impactOrder[a.impact] !== impactOrder[b.impact])
-          return impactOrder[a.impact] - impactOrder[b.impact];
-        return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
-      }),
-    [filtered]
-  );
+  const sorted = useMemo(() => {
+    const byTime = (a: NewsItem, b: NewsItem) =>
+      new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
+    if (sortBy === "time") return [...filtered].sort(byTime);
+    const impactOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+    return [...filtered].sort((a, b) => {
+      if (impactOrder[a.impact] !== impactOrder[b.impact])
+        return impactOrder[a.impact] - impactOrder[b.impact];
+      return byTime(a, b);
+    });
+  }, [filtered, sortBy]);
 
   const lastUpdated = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
@@ -212,14 +213,26 @@ export function NewsFeed() {
         {lastUpdated && (
           <span className="text-terminal-muted text-[10px]">Updated {lastUpdated}</span>
         )}
-        <button
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="ml-auto text-terminal-dim hover:text-terminal-blue transition-colors disabled:opacity-40"
-          title="Refresh"
-        >
-          <RefreshCw size={11} className={isFetching ? "animate-spin" : ""} />
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Sort toggle */}
+          <button
+            onClick={() => setSortBy((s) => s === "impact" ? "time" : "impact")}
+            className="flex items-center gap-1 px-2 py-0.5 text-[10px] rounded border border-terminal-border hover:border-terminal-blue transition-colors text-terminal-dim hover:text-terminal-blue"
+            title={sortBy === "impact" ? "Switch to newest first" : "Switch to impact first"}
+          >
+            {sortBy === "impact"
+              ? <><TrendingUp size={9} /> Impact</>
+              : <><Clock size={9} /> Newest</>}
+          </button>
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="text-terminal-dim hover:text-terminal-blue transition-colors disabled:opacity-40"
+            title="Refresh"
+          >
+            <RefreshCw size={11} className={isFetching ? "animate-spin" : ""} />
+          </button>
+        </div>
       </div>
 
       {/* ── Filter bar ── */}
