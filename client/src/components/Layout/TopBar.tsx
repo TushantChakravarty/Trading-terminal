@@ -1,6 +1,7 @@
 import { Activity, LogIn, LogOut, User } from "lucide-react";
 import axios from "axios";
 import { useTerminalStore } from "../../store";
+import { SERVER } from "../../lib/server";
 import { MarketStatus } from "../../types";
 
 function getMarketStatus(): MarketStatus {
@@ -98,7 +99,7 @@ export function TopBar() {
         </div>
       ) : (
         <a
-          href="/api/auth/login"
+          href={`${SERVER}/api/auth/login`}
           className="flex items-center gap-1.5 px-3 py-1 bg-terminal-blue text-white text-xs rounded hover:opacity-80 transition-opacity"
         >
           <LogIn size={12} />

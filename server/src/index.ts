@@ -12,6 +12,7 @@ import quotesRouter from "./routes/quotes";
 import optionsRouter from "./routes/options";
 import newsRouter from "./routes/news";
 import signalsRouter from "./routes/signals";
+import globalMarketsRouter from "./routes/globalMarkets";
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/quotes",  quotesRouter);
 app.use("/api/options", optionsRouter);
 app.use("/api/news",    newsRouter);
 app.use("/api/signals", signalsRouter);
+app.use("/api/market",  globalMarketsRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 

@@ -1,5 +1,13 @@
 import { Router, Request, Response } from "express";
-import { kiteService } from "../services/kite";
+import { kiteService, isKiteAuthError } from "../services/kite";
+
+const SPOT_SYMBOLS: Record<string, string> = {
+  NIFTY:      "NSE:NIFTY 50",
+  BANKNIFTY:  "NSE:NIFTY BANK",
+  FINNIFTY:   "NSE:NIFTY FIN SERVICE",
+  MIDCPNIFTY: "NSE:NIFTY MIDCAP SELECT",
+  SENSEX:     "BSE:SENSEX",
+};
 
 const router = Router();
 
@@ -103,8 +111,22 @@ router.get("/:underlying", async (req: Request, res: Response) => {
       };
     });
 
-    res.json({ expiries, selectedExpiry, strikes: chainData });
+    // Spot price for ATM detection on client
+    let spot = 0;
+    const spotSym = SPOT_SYMBOLS[underlying];
+    if (spotSym) {
+      try {
+        const sq = await kiteService.getQuotes([spotSym]);
+        spot = sq[spotSym]?.last_price ?? 0;
+      } catch { /* non-fatal */ }
+    }
+
+    res.json({ expiries, selectedExpiry, strikes: chainData, spot });
   } catch (err: any) {
+    if (isKiteAuthError(err)) {
+      kiteService.clearSession();
+      return res.status(401).json({ error: err.message, kiteAuthExpired: true });
+    }
     res.status(500).json({ error: err.message });
   }
 });

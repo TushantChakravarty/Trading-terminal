@@ -16,6 +16,7 @@ interface TerminalStore {
   profile: any | null;
   ticks: Record<number, Tick>;
   watchlist: WatchlistItem[];
+  additionalTokens: number[];
   selectedSymbol: string;
   selectedToken: number | null;
   activePanel: "chart" | "options" | "signals" | "news" | "watchlist";
@@ -26,18 +27,19 @@ interface TerminalStore {
   setSelectedSymbol: (symbol: string, token: number) => void;
   addToWatchlist: (item: WatchlistItem) => void;
   removeFromWatchlist: (symbol: string) => void;
+  setAdditionalTokens: (tokens: number[]) => void;
   setActivePanel: (panel: "chart" | "options" | "signals" | "news" | "watchlist") => void;
 }
 
 const DEFAULT_WATCHLIST: WatchlistItem[] = [
-  { symbol: "NIFTY 50", exchange: "NSE", token: 256265, displayName: "NIFTY" },
-  { symbol: "NIFTY BANK", exchange: "NSE", token: 260105, displayName: "BANKNIFTY" },
-  { symbol: "INDIA VIX", exchange: "NSE", token: 264969, displayName: "INDIA VIX" },
-  { symbol: "RELIANCE", exchange: "NSE", token: 738561, displayName: "RELIANCE" },
-  { symbol: "TCS", exchange: "NSE", token: 2953217, displayName: "TCS" },
-  { symbol: "HDFCBANK", exchange: "NSE", token: 341249, displayName: "HDFC BANK" },
-  { symbol: "INFY", exchange: "NSE", token: 408065, displayName: "INFOSYS" },
-  { symbol: "ICICIBANK", exchange: "NSE", token: 1270529, displayName: "ICICI BANK" },
+  { symbol: "RELIANCE", exchange: "NSE", token: 738561,  displayName: "RELIANCE"  },
+  { symbol: "TCS",      exchange: "NSE", token: 2953217, displayName: "TCS"       },
+  { symbol: "HDFCBANK", exchange: "NSE", token: 341249,  displayName: "HDFC BANK" },
+  { symbol: "INFY",     exchange: "NSE", token: 408065,  displayName: "INFOSYS"   },
+  { symbol: "ICICIBANK",exchange: "NSE", token: 1270529, displayName: "ICICI BANK"},
+  { symbol: "BHARTIARTL",exchange:"NSE", token: 2714625, displayName: "AIRTEL"    },
+  { symbol: "KOTAKBANK",exchange: "NSE", token: 492033,  displayName: "KOTAK BANK"},
+  { symbol: "AXISBANK", exchange: "NSE", token: 1510401, displayName: "AXIS BANK" },
 ];
 
 export const useTerminalStore = create<TerminalStore>((set) => ({
@@ -46,6 +48,7 @@ export const useTerminalStore = create<TerminalStore>((set) => ({
   profile: null,
   ticks: {},
   watchlist: DEFAULT_WATCHLIST,
+  additionalTokens: [],
   selectedSymbol: "NSE:NIFTY 50",
   selectedToken: 256265,
   activePanel: "chart",
@@ -88,15 +91,6 @@ export const useTerminalStore = create<TerminalStore>((set) => ({
       watchlist: state.watchlist.filter((w) => w.symbol !== symbol),
     })),
 
+  setAdditionalTokens: (tokens) => set({ additionalTokens: tokens }),
   setActivePanel: (panel) => set({ activePanel: panel }),
 }));
-
-axios.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err.response?.status === 401 && err.response?.data?.kiteAuthExpired) {
-      useTerminalStore.getState().setAuth(false);
-    }
-    return Promise.reject(err);
-  }
-);

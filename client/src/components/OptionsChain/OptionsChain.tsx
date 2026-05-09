@@ -159,9 +159,10 @@ export function OptionsChain() {
       if (!data?.strikes.length)
         return { atmStrike: 0, maxPainStrike: 0, maxCallOI: 1, maxPutOI: 1, pcr: 1, totalCallOI: 0, totalPutOI: 0 };
 
-      const mid = data.strikes[Math.floor(data.strikes.length / 2)].strike;
+      // Use server-provided spot price for accurate ATM; fall back to midpoint if unavailable
+      const ref = data.spot > 0 ? data.spot : data.strikes[Math.floor(data.strikes.length / 2)].strike;
       const atm = data.strikes.reduce((p, c) =>
-        Math.abs(c.strike - mid) < Math.abs(p.strike - mid) ? c : p
+        Math.abs(c.strike - ref) < Math.abs(p.strike - ref) ? c : p
       ).strike;
 
       const maxCall = Math.max(...data.strikes.map((s) => s.CE?.oi ?? 0), 1);

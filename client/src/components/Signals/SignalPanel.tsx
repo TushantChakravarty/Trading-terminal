@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { TrendingUp, TrendingDown, Minus, RefreshCw, AlertTriangle, LogIn } from "lucide-react";
 import { useTerminalStore } from "../../store";
+import { SERVER } from "../../lib/server";
 
 const UNDERLYINGS = ["NIFTY", "BANKNIFTY", "FINNIFTY"];
 
@@ -257,7 +258,7 @@ export function SignalPanel() {
           </span>
           {error.response?.status === 401 ? (
             <a
-              href="/api/auth/login"
+              href={`${SERVER}/api/auth/login`}
               className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-terminal-blue text-white text-xs rounded hover:opacity-80 transition-opacity"
             >
               <LogIn size={11} /> Re-login with Zerodha

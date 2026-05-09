@@ -62,6 +62,24 @@ export interface OptionsChainData {
   expiries: string[];
   selectedExpiry: string;
   strikes: OptionStrike[];
+  spot: number;
+}
+
+export interface GlobalIndex {
+  symbol: string;
+  name: string;
+  exchange: string;
+  price: number;
+  change: number;
+  changePct: number;
+}
+
+export interface FuturesInstrument {
+  token: number;
+  symbol: string;
+  name: string;
+  exchange: string;
+  expiry: string;
 }
 
 export type NewsCategory = "RBI" | "MACRO" | "GLOBAL" | "CORPORATE" | "MARKETS" | "BUDGET" | "SECTOR" | "GENERAL";

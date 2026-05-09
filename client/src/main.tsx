@@ -15,12 +15,16 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
-// On a 401, clear the stale token — Zustand state update triggers re-render to LoginPage
+// On a 401, either clear Kite auth (expired session) or app token (invalid app login)
 axios.interceptors.response.use(
   (r) => r,
   (err) => {
     if (err?.response?.status === 401) {
-      useTerminalStore.getState().setAppToken(null);
+      if (err.response.data?.kiteAuthExpired) {
+        useTerminalStore.getState().setAuth(false);
+      } else {
+        useTerminalStore.getState().setAppToken(null);
+      }
     }
     return Promise.reject(err);
   }

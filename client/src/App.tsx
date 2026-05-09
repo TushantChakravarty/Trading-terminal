@@ -9,6 +9,7 @@ import { LoginPage } from "./components/Login/LoginPage";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useAuthStatus } from "./hooks/useAuthStatus";
 import { useTerminalStore } from "./store";
+import { SERVER } from "./lib/server";
 
 // ── Desktop top tab row ───────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ function AuthBanner() {
         <span className="hidden sm:inline">⚡ Login with Zerodha to enable live data, options chain & signals</span>
         <span className="sm:hidden text-[10px]">⚡ Login for live data</span>
         <a
-          href="/api/auth/login"
+          href={`${SERVER}/api/auth/login`}
           className="px-3 py-1 bg-terminal-blue text-white rounded hover:opacity-80 transition-opacity whitespace-nowrap"
         >
           Login →
@@ -95,14 +96,15 @@ function AuthBanner() {
 function Terminal() {
   useAuthStatus();
   const { status, subscribe } = useWebSocket();
-  const { watchlist } = useTerminalStore();
+  const { watchlist, additionalTokens } = useTerminalStore();
   const activePanel = useTerminalStore((s) => s.activePanel);
 
   useEffect(() => {
     if (status === "connected") {
-      subscribe(watchlist.map((w) => w.token));
+      const tokens = [...new Set([...watchlist.map((w) => w.token), ...additionalTokens])];
+      subscribe(tokens);
     }
-  }, [status, watchlist.length]);
+  }, [status, watchlist.length, additionalTokens.join(",")]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
