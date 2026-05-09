@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { computeSignal } from "../services/signals";
+import { kiteService, isKiteAuthError } from "../services/kite";
 
 const router = Router();
 
@@ -18,6 +19,10 @@ router.get("/:underlying", async (req: Request, res: Response) => {
     cache[underlying] = { data: signal, at: Date.now() };
     res.json(signal);
   } catch (err: any) {
+    if (isKiteAuthError(err)) {
+      kiteService.clearSession();
+      return res.status(401).json({ error: err.message, kiteAuthExpired: true });
+    }
     res.status(500).json({ error: err.message });
   }
 });

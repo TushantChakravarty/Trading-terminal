@@ -90,3 +90,13 @@ export const useTerminalStore = create<TerminalStore>((set) => ({
 
   setActivePanel: (panel) => set({ activePanel: panel }),
 }));
+
+axios.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401 && err.response?.data?.kiteAuthExpired) {
+      useTerminalStore.getState().setAuth(false);
+    }
+    return Promise.reject(err);
+  }
+);

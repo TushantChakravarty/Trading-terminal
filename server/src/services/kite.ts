@@ -52,6 +52,12 @@ class KiteService {
     return session;
   }
 
+  clearSession() {
+    this.accessToken = null;
+    this.userProfile = null;
+    if (this.kc) this.kc.setAccessToken(null);
+  }
+
   isAuthenticated(): boolean {
     return !!this.accessToken;
   }
@@ -103,3 +109,11 @@ class KiteService {
 }
 
 export const kiteService = new KiteService();
+
+export function isKiteAuthError(err: any): boolean {
+  return (
+    err?.error_type === "TokenException" ||
+    (typeof err?.message === "string" &&
+      (err.message.includes("access_token") || err.message.includes("api_key")))
+  );
+}

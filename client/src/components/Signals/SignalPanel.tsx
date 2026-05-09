@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { TrendingUp, TrendingDown, Minus, RefreshCw, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, RefreshCw, AlertTriangle, LogIn } from "lucide-react";
 import { useTerminalStore } from "../../store";
 
 const UNDERLYINGS = ["NIFTY", "BANKNIFTY", "FINNIFTY"];
@@ -255,12 +255,21 @@ export function SignalPanel() {
           <span className="text-terminal-muted text-xs text-center">
             {error.response?.data?.error ?? error.message}
           </span>
-          <button
-            onClick={() => refetch()}
-            className="mt-2 text-[10px] text-terminal-blue hover:opacity-80 flex items-center gap-1"
-          >
-            <RefreshCw size={10} /> Retry
-          </button>
+          {error.response?.status === 401 ? (
+            <a
+              href="/api/auth/login"
+              className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-terminal-blue text-white text-xs rounded hover:opacity-80 transition-opacity"
+            >
+              <LogIn size={11} /> Re-login with Zerodha
+            </a>
+          ) : (
+            <button
+              onClick={() => refetch()}
+              className="mt-2 text-[10px] text-terminal-blue hover:opacity-80 flex items-center gap-1"
+            >
+              <RefreshCw size={10} /> Retry
+            </button>
+          )}
         </div>
       )}
 
