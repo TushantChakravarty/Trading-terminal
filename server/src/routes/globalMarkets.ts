@@ -20,6 +20,26 @@ const GLOBAL_TTL = 60_000;
 let futuresCache: { data: any[]; at: number } | null = null;
 const FUTURES_TTL = 5 * 60_000;
 
+const YF_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept": "application/json, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+};
+
+async function fetchYFChart(symbol: string): Promise<{ price: number; change: number; changePct: number }> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
+  const resp = await fetch(url, { headers: YF_HEADERS });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json() as any;
+  const meta = json?.chart?.result?.[0]?.meta;
+  if (!meta) throw new Error("no meta");
+  const price = meta.regularMarketPrice ?? 0;
+  const prev  = meta.previousClose ?? meta.chartPreviousClose ?? 0;
+  const change = prev > 0 ? price - prev : 0;
+  const changePct = prev > 0 ? (change / prev) * 100 : 0;
+  return { price, change, changePct };
+}
+
 // GET /api/market/global
 router.get("/global", async (_req: Request, res: Response) => {
   if (globalCache && Date.now() - globalCache.at < GLOBAL_TTL) {
@@ -27,37 +47,25 @@ router.get("/global", async (_req: Request, res: Response) => {
   }
 
   try {
-    const symbols = GLOBAL_SYMBOLS.map((s) => s.symbol).join(",");
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent`;
+    const results = await Promise.allSettled(
+      GLOBAL_SYMBOLS.map(async ({ symbol, name, exchange }) => {
+        const q = await fetchYFChart(symbol);
+        return { symbol, name, exchange, ...q };
+      })
+    );
 
-    const resp = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-      },
-    });
-
-    if (!resp.ok) throw new Error(`Yahoo Finance HTTP ${resp.status}`);
-
-    const json = await resp.json() as any;
-    const quotes: any[] = json.quoteResponse?.result ?? [];
-
-    const data = GLOBAL_SYMBOLS.map(({ symbol, name, exchange }) => {
-      const q = quotes.find((r: any) => r.symbol === symbol);
-      return {
-        symbol,
-        name,
-        exchange,
-        price:     q?.regularMarketPrice          ?? 0,
-        change:    q?.regularMarketChange          ?? 0,
-        changePct: q?.regularMarketChangePercent   ?? 0,
-      };
+    const data = results.map((r, i) => {
+      const { symbol, name, exchange } = GLOBAL_SYMBOLS[i];
+      if (r.status === "fulfilled") return r.value;
+      // Keep stale price for failed symbols
+      const stale = globalCache?.data.find((d) => d.symbol === symbol);
+      return stale ?? { symbol, name, exchange, price: 0, change: 0, changePct: 0 };
     });
 
     globalCache = { data, at: Date.now() };
     res.json(data);
   } catch (err: any) {
-    console.error("[globalMarkets] Yahoo Finance fetch failed:", err.message);
+    console.error("[globalMarkets] fetch failed:", err.message);
     if (globalCache) return res.json(globalCache.data);
     res.status(502).json({ error: "Could not fetch global indices" });
   }
@@ -72,18 +80,21 @@ router.get("/futures", async (_req: Request, res: Response) => {
   try {
     const instruments: any[] = await kiteService.getInstruments("NFO");
 
+    const toExpStr = (d: any): string =>
+      d instanceof Date ? d.toISOString().split("T")[0] : String(d ?? "").split("T")[0];
+
     const NAMES = ["NIFTY", "BANKNIFTY", "FINNIFTY"];
     const data = NAMES.map((name) => {
       const fut = instruments
-        .filter((i) => i.name === name && i.instrument_type === "FUT")
-        .sort((a, b) => a.expiry.localeCompare(b.expiry))[0];
+        .filter((i: any) => i.name === name && i.instrument_type === "FUT")
+        .sort((a: any, b: any) => toExpStr(a.expiry).localeCompare(toExpStr(b.expiry)))[0];
       if (!fut) return null;
       return {
         token:    fut.instrument_token as number,
         symbol:   fut.tradingsymbol   as string,
         name:     `${name} FUT`,
         exchange: "NFO",
-        expiry:   fut.expiry          as string,
+        expiry:   toExpStr(fut.expiry),
       };
     }).filter(Boolean);
 

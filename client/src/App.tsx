@@ -99,9 +99,12 @@ function Terminal() {
   const { watchlist, additionalTokens } = useTerminalStore();
   const activePanel = useTerminalStore((s) => s.activePanel);
 
+  // Always keep the 4 main Indian indices subscribed for TopBar + Watchlist
+  const CORE_TOKENS = [256265, 260105, 265, 264969]; // NIFTY, BANKNIFTY, SENSEX, VIX
+
   useEffect(() => {
     if (status === "connected") {
-      const tokens = [...new Set([...watchlist.map((w) => w.token), ...additionalTokens])];
+      const tokens = [...new Set([...CORE_TOKENS, ...watchlist.map((w) => w.token), ...additionalTokens])];
       subscribe(tokens);
     }
   }, [status, watchlist.length, additionalTokens.join(",")]);

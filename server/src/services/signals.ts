@@ -124,9 +124,13 @@ export async function computeSignal(underlying: string): Promise<SignalResult> {
     (i) => i.name === underlying && (i.instrument_type === "CE" || i.instrument_type === "PE")
   );
 
-  const expiries = [...new Set(options.map((i: any) => i.expiry).filter(Boolean))].sort() as string[];
+  // expiry is a Date object from kiteconnect — normalise to "YYYY-MM-DD" string
+  const toExpStr = (d: any): string =>
+    d instanceof Date ? d.toISOString().split("T")[0] : String(d ?? "").split("T")[0];
+
+  const expiries = [...new Set(options.map((i: any) => toExpStr(i.expiry)).filter(Boolean))].sort();
   const nearExpiry = expiries[0];
-  const chain = options.filter((i: any) => i.expiry === nearExpiry);
+  const chain = options.filter((i: any) => toExpStr(i.expiry) === nearExpiry);
 
   // 3. Quotes for chain (chunked)
   const symbols = chain.map((i: any) => `NFO:${i.tradingsymbol}`);

@@ -11,13 +11,20 @@ const SPOT_SYMBOLS: Record<string, string> = {
 
 const router = Router();
 
+// Kite returns expiry as a Date object from the instruments CSV parser
+function expiryStr(d: any): string {
+  if (!d) return "";
+  if (d instanceof Date) return d.toISOString().split("T")[0];
+  return String(d).split("T")[0];
+}
+
 interface Instrument {
   instrument_token: number;
   tradingsymbol: string;
   name: string;
-  expiry: string;
+  expiry: any; // Date object from kiteconnect parser
   strike: number;
-  instrument_type: string; // CE or PE
+  instrument_type: string;
   segment: string;
   exchange: string;
   lot_size: number;
@@ -38,14 +45,14 @@ router.get("/:underlying", async (req: Request, res: Response) => {
         (i.instrument_type === "CE" || i.instrument_type === "PE")
     );
 
-    // Get unique expiries sorted ascending
+    // Get unique expiries sorted ascending (expiry is a Date object from kiteconnect)
     const expiries = [
-      ...new Set(options.map((i) => i.expiry).filter(Boolean)),
+      ...new Set(options.map((i) => expiryStr(i.expiry)).filter(Boolean)),
     ].sort();
 
     const selectedExpiry = expiry || expiries[0];
 
-    const chain = options.filter((i) => i.expiry === selectedExpiry);
+    const chain = options.filter((i) => expiryStr(i.expiry) === selectedExpiry);
 
     // Group by strike
     const strikeMap: Record<number, { CE?: any; PE?: any }> = {};
