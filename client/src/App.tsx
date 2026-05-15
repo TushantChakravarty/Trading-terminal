@@ -5,6 +5,7 @@ import { CandleChart } from "./components/Chart/CandleChart";
 import { OptionsChain } from "./components/OptionsChain/OptionsChain";
 import { NewsFeed } from "./components/NewsFeed/NewsFeed";
 import { SignalPanel } from "./components/Signals/SignalPanel";
+import { AiSuggestions } from "./components/AiSuggestions/AiSuggestions";
 import { LoginPage } from "./components/Login/LoginPage";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useAuthStatus } from "./hooks/useAuthStatus";
@@ -20,6 +21,7 @@ function PanelTabs() {
     { id: "options" as const, label: "OPTIONS" },
     { id: "signals" as const, label: "SIGNALS" },
     { id: "news"    as const, label: "NEWS" },
+    { id: "ai"      as const, label: "AI" },
   ];
   return (
     <div className="hidden md:flex border-b border-terminal-border bg-terminal-header shrink-0">
@@ -50,6 +52,7 @@ function MobileNav() {
     { id: "options"   as const, label: "OPTIONS" },
     { id: "signals"   as const, label: "SIGNALS" },
     { id: "news"      as const, label: "NEWS" },
+    { id: "ai"        as const, label: "AI" },
   ];
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 flex bg-terminal-header border-t border-terminal-border z-30">
@@ -140,6 +143,7 @@ function Terminal() {
             {activePanel === "options" && <OptionsChain />}
             {activePanel === "signals" && <SignalPanel />}
             {activePanel === "news"    && <NewsFeed />}
+            {activePanel === "ai"      && <AiSuggestions />}
           </div>
         </div>
       </div>

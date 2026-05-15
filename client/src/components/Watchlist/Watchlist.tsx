@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { X, Globe, TrendingUp } from "lucide-react";
+import { X, Globe, TrendingUp, Plus, Search, Loader2 } from "lucide-react";
 import { useTerminalStore } from "../../store";
-import { GlobalIndex, FuturesInstrument } from "../../types";
+import { GlobalIndex, FuturesInstrument, Instrument } from "../../types";
 
 // ── Fixed Indian indices (always subscribed on auth) ─────────────────────────
 
@@ -34,11 +34,12 @@ function fmtPct(n: number) {
 
 // ── Section label ─────────────────────────────────────────────────────────────
 
-function SectionLabel({ label, icon }: { label: string; icon?: React.ReactNode }) {
+function SectionLabel({ label, icon, action }: { label: string; icon?: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="px-3 py-1 bg-terminal-bg/60 border-b border-terminal-border flex items-center gap-1">
       {icon}
-      <span className="text-[9px] text-terminal-muted tracking-widest font-medium">{label}</span>
+      <span className="text-[9px] text-terminal-muted tracking-widest font-medium flex-1">{label}</span>
+      {action}
     </div>
   );
 }
@@ -111,7 +112,7 @@ function FuturesRow({ fut }: { fut: FuturesInstrument }) {
   );
 }
 
-// ── Global index row (REST-polled, no Kite tick) ───────────────────────────────
+// ── Global index row (REST-polled, no Kite tick) ──────────────────────────────
 
 function GlobalRow({ idx }: { idx: GlobalIndex }) {
   const isUp = idx.changePct >= 0;
@@ -175,10 +176,110 @@ function StockRow({ item }: { item: { symbol: string; exchange: string; token: n
   );
 }
 
+// ── Instrument search ─────────────────────────────────────────────────────────
+
+function InstrumentSearch({ onClose }: { onClose: () => void }) {
+  const { addToWatchlist, watchlist } = useTerminalStore();
+  const [query, setQuery] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  // Debounce 300ms
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const { data: results, isFetching } = useQuery<Instrument[]>({
+    queryKey: ["instrument-search", debouncedQ],
+    queryFn: () =>
+      axios.get(`/api/quotes/instruments/NSE?q=${encodeURIComponent(debouncedQ)}`).then((r) => r.data),
+    enabled: debouncedQ.length >= 2,
+    staleTime: 30_000,
+  });
+
+  const alreadyAdded = new Set(watchlist.map((w) => w.symbol));
+
+  function handleAdd(inst: Instrument) {
+    addToWatchlist({
+      symbol:      inst.tradingsymbol,
+      exchange:    inst.exchange,
+      token:       inst.instrument_token,
+      displayName: inst.name || inst.tradingsymbol,
+    });
+    onClose();
+  }
+
+  return (
+    <div className="border-b border-terminal-border bg-terminal-bg">
+      {/* Search input */}
+      <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-terminal-border/60">
+        <Search size={10} className="text-terminal-muted shrink-0" />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Search NSE symbol..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && onClose()}
+          className="flex-1 bg-transparent text-[11px] text-terminal-text placeholder:text-terminal-muted focus:outline-none"
+        />
+        {isFetching && <Loader2 size={9} className="animate-spin text-terminal-muted shrink-0" />}
+        <button onClick={onClose} className="text-terminal-muted hover:text-terminal-red transition-colors">
+          <X size={10} />
+        </button>
+      </div>
+
+      {/* Results */}
+      {results && results.length > 0 && (
+        <div className="max-h-48 overflow-y-auto">
+          {results.slice(0, 20).map((inst) => {
+            const added = alreadyAdded.has(inst.tradingsymbol);
+            return (
+              <button
+                key={inst.instrument_token}
+                onClick={() => !added && handleAdd(inst)}
+                disabled={added}
+                className={`w-full flex items-center justify-between px-3 py-1.5 border-b border-terminal-border/30 text-left transition-colors ${
+                  added
+                    ? "opacity-40 cursor-default"
+                    : "hover:bg-terminal-header cursor-pointer"
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] text-terminal-text font-medium truncate">{inst.tradingsymbol}</div>
+                  {inst.name && (
+                    <div className="text-[9px] text-terminal-muted truncate">{inst.name}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  <span className="text-[9px] text-terminal-dim">{inst.instrument_type}</span>
+                  {added
+                    ? <span className="text-[9px] text-terminal-muted">added</span>
+                    : <Plus size={9} className="text-terminal-blue" />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {debouncedQ.length >= 2 && !isFetching && results?.length === 0 && (
+        <div className="px-3 py-2 text-[10px] text-terminal-muted">No results for "{debouncedQ}"</div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 export function Watchlist() {
   const { watchlist, isAuthenticated, setAdditionalTokens } = useTerminalStore();
+  const [showSearch, setShowSearch] = useState(false);
 
   // Futures — fetch near-month tokens then expose them for subscription
   const { data: futures } = useQuery<FuturesInstrument[]>({
@@ -239,7 +340,21 @@ export function Watchlist() {
         )}
 
         {/* ── Stocks ── */}
-        <SectionLabel label="STOCKS" />
+        <SectionLabel
+          label="STOCKS"
+          action={
+            <button
+              onClick={() => setShowSearch((v) => !v)}
+              className="text-terminal-muted hover:text-terminal-blue transition-colors"
+              title="Add symbol"
+            >
+              <Plus size={10} />
+            </button>
+          }
+        />
+
+        {showSearch && <InstrumentSearch onClose={() => setShowSearch(false)} />}
+
         {watchlist.map((item) => (
           <StockRow key={item.symbol} item={item} />
         ))}

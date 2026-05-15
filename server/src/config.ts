@@ -18,4 +18,8 @@ export const config = {
     password: process.env.APP_PASSWORD || "",
   },
   newsApiKey: process.env.NEWS_API_KEY || "",
+  hfApiKey:   process.env.HF_API_KEY   || "",
+  hfModel:    process.env.HF_MODEL     || "tiiuae/falcon-7b-instruct",
+  groqApiKey: process.env.GROQ_API_KEY || "",
+  groqModel:  process.env.GROQ_MODEL   || "llama-3.3-70b-versatile",
 };

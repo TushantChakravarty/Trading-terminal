@@ -103,3 +103,49 @@ export interface WatchlistItem {
 }
 
 export type MarketStatus = "pre-open" | "open" | "closed" | "post-close";
+
+export interface StockIdea {
+  id: string;
+  symbol: string;
+  exchange: string;
+  bias: "BUY" | "SELL";
+  entry: string;
+  target: string;
+  stop_loss: string;
+  reason: string;
+}
+
+export interface OptionsIdea {
+  id: string;
+  instrument: string;
+  expiry: string;
+  bias: "BUY" | "SELL";
+  entry: string;
+  target: string;
+  stop_loss: string;
+  reason: string;
+}
+
+export interface IndexIdea {
+  id: string;
+  index: string;        // e.g. "NIFTY 50", "BANKNIFTY"
+  instrument: string;   // e.g. "NIFTY FUT" or "NIFTY spot"
+  bias: "BUY" | "SELL";
+  entry: string;
+  target: string;
+  stop_loss: string;
+  reason: string;
+}
+
+export interface MarketPulse {
+  _id: string;
+  generatedAt: string;
+  market_bias: "BULLISH" | "BEARISH" | "NEUTRAL";
+  summary: string;
+  key_themes: string[];
+  bullish_sectors: string[];
+  bearish_sectors: string[];
+  index_ideas: IndexIdea[];
+  stock_ideas: StockIdea[];
+  options_ideas: OptionsIdea[];
+}

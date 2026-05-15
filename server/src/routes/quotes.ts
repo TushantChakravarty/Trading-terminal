@@ -45,7 +45,10 @@ router.get("/instruments/:exchange", async (req: Request, res: Response) => {
     if (q) {
       const query = q.toUpperCase();
       const filtered = instruments
-        .filter((i: any) => i.tradingsymbol.includes(query))
+        .filter((i: any) =>
+          (i.tradingsymbol?.includes(query)) ||
+          (i.name?.toUpperCase().includes(query))
+        )
         .slice(0, 50);
       return res.json(filtered);
     }
