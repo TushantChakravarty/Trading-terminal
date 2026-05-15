@@ -21,7 +21,7 @@ async function callGroq(systemMsg: string, userMsg: string): Promise<string> {
         { role: "system", content: systemMsg },
         { role: "user",   content: userMsg   },
       ],
-      max_tokens: 800,
+      max_tokens: 1500,
       temperature: 0.4,
     }),
   });
@@ -37,15 +37,45 @@ async function callGroq(systemMsg: string, userMsg: string): Promise<string> {
   throw new Error("Unexpected Groq response: " + JSON.stringify(json).slice(0, 200));
 }
 
-// Strip markdown code fences and extract the first JSON object/array
+// Strip markdown fences, extract JSON, repair if truncated
 function extractJson(raw: string): any {
-  // Remove ```json ... ``` or ``` ... ``` wrappers
-  const stripped = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-  // Find first { ... } block
+  const stripped = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
+
   const start = stripped.indexOf("{");
-  const end   = stripped.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("No JSON object found in response");
-  return JSON.parse(stripped.slice(start, end + 1));
+  if (start === -1) throw new Error("No JSON object found in response");
+
+  // Try last closing brace first (clean case)
+  const end = stripped.lastIndexOf("}");
+  if (end > start) {
+    try { return JSON.parse(stripped.slice(start, end + 1)); } catch { /* fall through to repair */ }
+  }
+
+  // Repair truncated JSON: close all open brackets in reverse order
+  let fragment = stripped.slice(start);
+  const stack: string[] = [];
+  let inString = false;
+  let escape   = false;
+
+  for (const ch of fragment) {
+    if (escape)            { escape = false; continue; }
+    if (ch === "\\")       { escape = true;  continue; }
+    if (ch === '"')        { inString = !inString; continue; }
+    if (inString)          { continue; }
+    if (ch === "{" || ch === "[") stack.push(ch === "{" ? "}" : "]");
+    if (ch === "}" || ch === "]") stack.pop();
+  }
+
+  // Strip trailing incomplete key/value (e.g. dangling comma or partial string)
+  fragment = fragment.replace(/,\s*$/, "").replace(/,\s*[\w"]*$/, "");
+  const closing = stack.reverse().join("");
+  try {
+    return JSON.parse(fragment + closing);
+  } catch (e: any) {
+    throw new Error("JSON parse failed after repair attempt: " + e.message);
+  }
 }
 
 // ── Per-symbol suggestion (chart AI button) ───────────────────────────────────
