@@ -115,6 +115,15 @@ function SectorCard({
               >
                 {sector.priceDataAvailable ? fmt(sector.avgChangePct) : "—"}
               </span>
+              {sector.priceDataAvailable && (
+                <span className={`px-1 py-0.5 text-[8px] tracking-widest rounded border font-medium ${
+                  sector.dataWindow === "2W"
+                    ? "text-terminal-blue border-terminal-blue/30 bg-terminal-blue/10"
+                    : "text-terminal-dim border-terminal-border/40 bg-terminal-header"
+                }`}>
+                  {sector.dataWindow}
+                </span>
+              )}
             </div>
 
             {/* Activity bar */}
@@ -315,7 +324,7 @@ export function HotSectors() {
       {data && !data[0]?.priceDataAvailable && (
         <div className="px-4 py-1.5 bg-terminal-yellow/5 border-b border-terminal-yellow/20 shrink-0">
           <span className="text-[9px] text-terminal-yellow tracking-wider">
-            ⚡ News-based ranking — live prices available after Zerodha login
+            ⚡ News-based ranking — 2-week price data available after Zerodha login
           </span>
         </div>
       )}

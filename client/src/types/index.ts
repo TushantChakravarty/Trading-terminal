@@ -146,6 +146,7 @@ export interface SectorAnalysis {
   catalyst: string;
   tradingAngle: string;
   priceDataAvailable: boolean;
+  dataWindow: "2W" | "1D";
 }
 
 export interface StockIdea {
