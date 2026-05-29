@@ -14,6 +14,7 @@ import newsRouter from "./routes/news";
 import signalsRouter from "./routes/signals";
 import globalMarketsRouter from "./routes/globalMarkets";
 import aiRouter from "./routes/ai";
+import eventsRouter from "./routes/events";
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use("/api/news",    newsRouter);
 app.use("/api/signals", signalsRouter);
 app.use("/api/market",  globalMarketsRouter);
 app.use("/api/ai",     aiRouter);
+app.use("/api/events", eventsRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 

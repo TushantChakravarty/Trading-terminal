@@ -85,6 +85,27 @@ export interface FuturesInstrument {
 export type NewsCategory = "RBI" | "MACRO" | "GLOBAL" | "CORPORATE" | "MARKETS" | "BUDGET" | "SECTOR" | "WAR" | "OIL" | "HEALTH" | "GENERAL";
 export type ImpactLevel = "HIGH" | "MEDIUM" | "LOW";
 
+export type EventType =
+  | "INDEX_REBALANCE"
+  | "FO_EXPIRY"
+  | "RBI_POLICY"
+  | "ECONOMIC_DATA"
+  | "GLOBAL"
+  | "IPO"
+  | "CORPORATE"
+  | "HOLIDAY";
+
+export interface MarketEvent {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  type: EventType;
+  impact: ImpactLevel;
+  affectedSymbols?: string[];
+  source?: string;
+}
+
 export interface NewsItem {
   title: string;
   link: string;

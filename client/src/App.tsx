@@ -6,6 +6,7 @@ import { OptionsChain } from "./components/OptionsChain/OptionsChain";
 import { NewsFeed } from "./components/NewsFeed/NewsFeed";
 import { SignalPanel } from "./components/Signals/SignalPanel";
 import { AiSuggestions } from "./components/AiSuggestions/AiSuggestions";
+import { MarketEvents } from "./components/Events/MarketEvents";
 import { LoginPage } from "./components/Login/LoginPage";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useAuthStatus } from "./hooks/useAuthStatus";
@@ -21,6 +22,7 @@ function PanelTabs() {
     { id: "options" as const, label: "OPTIONS" },
     { id: "signals" as const, label: "SIGNALS" },
     { id: "news"    as const, label: "NEWS" },
+    { id: "events"  as const, label: "EVENTS" },
     { id: "ai"      as const, label: "AI" },
   ];
   return (
@@ -52,6 +54,7 @@ function MobileNav() {
     { id: "options"   as const, label: "OPTIONS" },
     { id: "signals"   as const, label: "SIGNALS" },
     { id: "news"      as const, label: "NEWS" },
+    { id: "events"    as const, label: "EVENTS" },
     { id: "ai"        as const, label: "AI" },
   ];
   return (
@@ -143,6 +146,7 @@ function Terminal() {
             {activePanel === "options" && <OptionsChain />}
             {activePanel === "signals" && <SignalPanel />}
             {activePanel === "news"    && <NewsFeed />}
+            {activePanel === "events"  && <MarketEvents />}
             {activePanel === "ai"      && <AiSuggestions />}
           </div>
         </div>
