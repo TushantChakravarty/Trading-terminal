@@ -184,6 +184,7 @@ export interface StockFundamentals {
   dividendYield: number | null;
   quarterly: QuarterlyResult[];
   annual: AnnualResult[];
+  source: "NSE" | "Yahoo" | "NSE+Yahoo";
 }
 
 export interface MoverStock {

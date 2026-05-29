@@ -282,7 +282,7 @@ export function StockDetailDrawer({ symbol, displayName, onClose }: Props) {
 
               {/* Footer note */}
               <p className="text-[8px] text-terminal-muted/50 text-center pb-2">
-                Data via Yahoo Finance · INR · {new Date().toLocaleDateString("en-IN")}
+                Data via {data.source === "NSE" ? "NSE India" : data.source === "NSE+Yahoo" ? "NSE India + Yahoo Finance" : "Yahoo Finance"} · INR · {new Date().toLocaleDateString("en-IN")}
               </p>
             </>
           )}
