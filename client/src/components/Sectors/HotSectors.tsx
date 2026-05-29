@@ -4,6 +4,7 @@ import axios from "axios";
 import { RefreshCw, TrendingUp, TrendingDown, Minus, Zap, AlertCircle, Layers } from "lucide-react";
 import type { SectorAnalysis } from "../../types";
 import { ThemeScreener } from "./ThemeScreener";
+import { MoversList } from "./MoversList";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -360,7 +361,7 @@ function BroadSectors() {
 
 // ── Top-level export with SECTORS / THEMES toggle ────────────────────────────
 
-type ViewMode = "SECTORS" | "THEMES";
+type ViewMode = "SECTORS" | "THEMES" | "MOVERS";
 
 export function HotSectors() {
   const [view, setView] = useState<ViewMode>("SECTORS");
@@ -370,7 +371,7 @@ export function HotSectors() {
       {/* ── View toggle header ── */}
       <div className="flex items-center gap-1 px-4 py-2 border-b border-terminal-border shrink-0">
         <Layers size={11} className="text-terminal-dim shrink-0 mr-1" />
-        {(["SECTORS", "THEMES"] as ViewMode[]).map((v) => (
+        {(["SECTORS", "THEMES", "MOVERS"] as ViewMode[]).map((v) => (
           <button
             key={v}
             onClick={() => setView(v)}
@@ -388,11 +389,18 @@ export function HotSectors() {
             1-month thematic momentum · click to expand
           </span>
         )}
+        {view === "MOVERS" && (
+          <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
+            midcap &amp; smallcap universe · grouped by sector
+          </span>
+        )}
       </div>
 
       {/* ── Content area ── */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        {view === "SECTORS" ? <BroadSectors /> : <ThemeScreener />}
+        {view === "SECTORS" && <BroadSectors />}
+        {view === "THEMES"  && <ThemeScreener />}
+        {view === "MOVERS"  && <MoversList />}
       </div>
     </div>
   );

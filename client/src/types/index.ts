@@ -149,6 +149,30 @@ export interface SectorAnalysis {
   dataWindow: "2W" | "1D";
 }
 
+export interface MoverStock {
+  symbol: string;
+  name: string;
+  cap: "MIDCAP" | "SMALLCAP";
+  sector: string;
+  return1M: number;
+  ltp: number;
+}
+
+export interface SectorGroup {
+  sector: string;
+  avgReturn: number;
+  count: number;
+  stocks: MoverStock[];
+}
+
+export interface MoversResult {
+  totalRallied: number;
+  midcapRallied: number;
+  smallcapRallied: number;
+  sectors: SectorGroup[];
+  generatedAt: string;
+}
+
 export interface ThemeStock {
   symbol: string;
   name: string;
