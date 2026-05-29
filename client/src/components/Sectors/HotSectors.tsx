@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { RefreshCw, TrendingUp, TrendingDown, Minus, Zap, AlertCircle } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Minus, Zap, AlertCircle, Layers } from "lucide-react";
 import type { SectorAnalysis } from "../../types";
+import { ThemeScreener } from "./ThemeScreener";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -217,9 +218,9 @@ function SectorCard({
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Broad sectors view (inner) ────────────────────────────────────────────────
 
-export function HotSectors() {
+function BroadSectors() {
   const [dirFilter, setDirFilter] = useState<DirectionFilter>("ALL");
 
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery<SectorAnalysis[]>({
@@ -353,6 +354,46 @@ export function HotSectors() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Top-level export with SECTORS / THEMES toggle ────────────────────────────
+
+type ViewMode = "SECTORS" | "THEMES";
+
+export function HotSectors() {
+  const [view, setView] = useState<ViewMode>("SECTORS");
+
+  return (
+    <div className="flex flex-col h-full bg-terminal-panel font-mono">
+      {/* ── View toggle header ── */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-terminal-border shrink-0">
+        <Layers size={11} className="text-terminal-dim shrink-0 mr-1" />
+        {(["SECTORS", "THEMES"] as ViewMode[]).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`px-3 py-1 text-[10px] tracking-widest rounded border transition-colors ${
+              view === v
+                ? "border-terminal-blue text-terminal-blue bg-terminal-blue/10"
+                : "border-terminal-border/40 text-terminal-dim hover:text-terminal-text"
+            }`}
+          >
+            {v}
+          </button>
+        ))}
+        {view === "THEMES" && (
+          <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
+            1-month thematic momentum · click to expand
+          </span>
+        )}
+      </div>
+
+      {/* ── Content area ── */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {view === "SECTORS" ? <BroadSectors /> : <ThemeScreener />}
+      </div>
     </div>
   );
 }

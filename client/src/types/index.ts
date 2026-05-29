@@ -149,6 +149,31 @@ export interface SectorAnalysis {
   dataWindow: "2W" | "1D";
 }
 
+export interface ThemeStock {
+  symbol: string;
+  name: string;
+  return1M: number;
+  ltp: number;
+}
+
+export type ThemeMomentum = "STRONG" | "MODERATE" | "WEAK" | "NEGATIVE";
+
+export interface ThemeAnalysis {
+  id: string;
+  name: string;
+  shortName: string;
+  avgReturn1M: number;
+  breadth: number;
+  stockCount: number;
+  topPerformers: ThemeStock[];
+  newsCount: number;
+  keyNews: string[];
+  driver: string;
+  analysis: string;
+  tradingAngle: string;
+  momentum: ThemeMomentum;
+}
+
 export interface StockIdea {
   id: string;
   symbol: string;

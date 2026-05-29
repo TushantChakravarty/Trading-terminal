@@ -16,6 +16,7 @@ import globalMarketsRouter from "./routes/globalMarkets";
 import aiRouter from "./routes/ai";
 import eventsRouter from "./routes/events";
 import sectorsRouter from "./routes/sectors";
+import themesRouter from "./routes/themes";
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use("/api/market",  globalMarketsRouter);
 app.use("/api/ai",     aiRouter);
 app.use("/api/events",  eventsRouter);
 app.use("/api/sectors", sectorsRouter);
+app.use("/api/themes",  themesRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
