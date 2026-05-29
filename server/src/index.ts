@@ -18,6 +18,7 @@ import eventsRouter from "./routes/events";
 import sectorsRouter from "./routes/sectors";
 import themesRouter from "./routes/themes";
 import moversRouter from "./routes/movers";
+import fundamentalsRouter from "./routes/fundamentals";
 
 const app = express();
 
@@ -54,7 +55,8 @@ app.use("/api/ai",     aiRouter);
 app.use("/api/events",  eventsRouter);
 app.use("/api/sectors", sectorsRouter);
 app.use("/api/themes",  themesRouter);
-app.use("/api/movers",  moversRouter);
+app.use("/api/movers",       moversRouter);
+app.use("/api/fundamentals", fundamentalsRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 

@@ -4,6 +4,8 @@ import axios from "axios";
 import { RefreshCw, TrendingUp, AlertCircle, SlidersHorizontal } from "lucide-react";
 import type { MoversResult, SectorGroup, MoverStock } from "../../types";
 
+export type StockSelectHandler = (symbol: string, name: string) => void;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmt(n: number): string {
@@ -26,9 +28,12 @@ function returnBg(r: number): string {
 
 // ── Stock chip ────────────────────────────────────────────────────────────────
 
-function StockChip({ stock }: { stock: MoverStock }) {
+function StockChip({ stock, onSelect }: { stock: MoverStock; onSelect: StockSelectHandler }) {
   return (
-    <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded border ${returnBg(stock.return1M)}`}>
+    <button
+      onClick={() => onSelect(stock.symbol, stock.name)}
+      className={`flex items-center gap-1.5 px-2 py-1.5 rounded border ${returnBg(stock.return1M)} hover:brightness-125 transition-all text-left`}
+    >
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-semibold text-terminal-text tracking-wide truncate">
@@ -53,16 +58,17 @@ function StockChip({ stock }: { stock: MoverStock }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
 // ── Sector group card ─────────────────────────────────────────────────────────
 
-function SectorCard({ group, rank, capFilter }: {
+function SectorCard({ group, rank, capFilter, onSelect }: {
   group: SectorGroup;
   rank: number;
   capFilter: "ALL" | "MIDCAP" | "SMALLCAP";
+  onSelect: StockSelectHandler;
 }) {
   const visible = capFilter === "ALL"
     ? group.stocks
@@ -93,7 +99,7 @@ function SectorCard({ group, rank, capFilter }: {
       {/* Stock chips */}
       <div className="flex flex-wrap gap-1.5 px-3 py-2">
         {visible.map((s) => (
-          <StockChip key={s.symbol} stock={s} />
+          <StockChip key={s.symbol} stock={s} onSelect={onSelect} />
         ))}
       </div>
     </div>
@@ -105,7 +111,7 @@ function SectorCard({ group, rank, capFilter }: {
 type CapFilter  = "ALL" | "MIDCAP" | "SMALLCAP";
 type RetFilter  = 3 | 5 | 10 | 20;
 
-export function MoversList() {
+export function MoversList({ onSelectStock }: { onSelectStock: StockSelectHandler }) {
   const [capFilter, setCapFilter]   = useState<CapFilter>("ALL");
   const [minReturn, setMinReturn]   = useState<RetFilter>(3);
 
@@ -227,6 +233,7 @@ export function MoversList() {
               group={group}
               rank={i + 1}
               capFilter={capFilter}
+              onSelect={onSelectStock}
             />
           ))}
         </div>

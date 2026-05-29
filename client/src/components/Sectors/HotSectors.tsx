@@ -4,7 +4,8 @@ import axios from "axios";
 import { RefreshCw, TrendingUp, TrendingDown, Minus, Zap, AlertCircle, Layers } from "lucide-react";
 import type { SectorAnalysis } from "../../types";
 import { ThemeScreener } from "./ThemeScreener";
-import { MoversList } from "./MoversList";
+import { MoversList, type StockSelectHandler } from "./MoversList";
+import { StockDetailDrawer } from "../StockDetail/StockDetailDrawer";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -70,10 +71,12 @@ function SectorCard({
   sector,
   maxScore,
   rank,
+  onSelect,
 }: {
   sector: SectorAnalysis;
   maxScore: number;
   rank: number;
+  onSelect: StockSelectHandler;
 }) {
   const [expanded, setExpanded] = useState(false);
   const conf = DIRECTION_CONFIG[sector.direction];
@@ -149,9 +152,10 @@ function SectorCard({
         {sector.topMovers
           .filter((m) => m.ltp > 0 || !sector.priceDataAvailable)
           .map((m) => (
-            <div
+            <button
               key={m.symbol}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-terminal-header border border-terminal-border/50"
+              onClick={() => onSelect(m.symbol.replace("NSE:", ""), m.name)}
+              className="flex items-center gap-1 px-2 py-1 rounded bg-terminal-header border border-terminal-border/50 hover:border-terminal-border transition-colors"
             >
               <span className="text-[9px] font-medium text-terminal-dim tracking-wider">
                 {m.name}
@@ -169,7 +173,7 @@ function SectorCard({
                   {fmt(m.changePct)}
                 </span>
               )}
-            </div>
+            </button>
           ))}
       </div>
 
@@ -221,7 +225,7 @@ function SectorCard({
 
 // ── Broad sectors view (inner) ────────────────────────────────────────────────
 
-function BroadSectors() {
+function BroadSectors({ onSelectStock }: { onSelectStock: StockSelectHandler }) {
   const [dirFilter, setDirFilter] = useState<DirectionFilter>("ALL");
 
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery<SectorAnalysis[]>({
@@ -351,6 +355,7 @@ function BroadSectors() {
               sector={sector}
               maxScore={maxScore}
               rank={data ? data.indexOf(sector) + 1 : i + 1}
+              onSelect={onSelectStock}
             />
           ))}
         </div>
@@ -365,43 +370,59 @@ type ViewMode = "SECTORS" | "THEMES" | "MOVERS";
 
 export function HotSectors() {
   const [view, setView] = useState<ViewMode>("SECTORS");
+  const [selectedStock, setSelectedStock] = useState<{ symbol: string; name: string } | null>(null);
+
+  const handleSelectStock: StockSelectHandler = (symbol, name) => {
+    setSelectedStock({ symbol, name });
+  };
 
   return (
-    <div className="flex flex-col h-full bg-terminal-panel font-mono">
-      {/* ── View toggle header ── */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-terminal-border shrink-0">
-        <Layers size={11} className="text-terminal-dim shrink-0 mr-1" />
-        {(["SECTORS", "THEMES", "MOVERS"] as ViewMode[]).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className={`px-3 py-1 text-[10px] tracking-widest rounded border transition-colors ${
-              view === v
-                ? "border-terminal-blue text-terminal-blue bg-terminal-blue/10"
-                : "border-terminal-border/40 text-terminal-dim hover:text-terminal-text"
-            }`}
-          >
-            {v}
-          </button>
-        ))}
-        {view === "THEMES" && (
-          <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
-            1-month thematic momentum · click to expand
-          </span>
-        )}
-        {view === "MOVERS" && (
-          <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
-            midcap &amp; smallcap universe · grouped by sector
-          </span>
-        )}
+    <>
+      <div className="flex flex-col h-full bg-terminal-panel font-mono">
+        {/* ── View toggle header ── */}
+        <div className="flex items-center gap-1 px-4 py-2 border-b border-terminal-border shrink-0">
+          <Layers size={11} className="text-terminal-dim shrink-0 mr-1" />
+          {(["SECTORS", "THEMES", "MOVERS"] as ViewMode[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1 text-[10px] tracking-widest rounded border transition-colors ${
+                view === v
+                  ? "border-terminal-blue text-terminal-blue bg-terminal-blue/10"
+                  : "border-terminal-border/40 text-terminal-dim hover:text-terminal-text"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+          {view === "THEMES" && (
+            <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
+              1-month thematic momentum · click stock for details
+            </span>
+          )}
+          {view === "MOVERS" && (
+            <span className="ml-2 text-[9px] text-terminal-muted hidden sm:inline">
+              midcap &amp; smallcap · click stock for details
+            </span>
+          )}
+        </div>
+
+        {/* ── Content area ── */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {view === "SECTORS" && <BroadSectors onSelectStock={handleSelectStock} />}
+          {view === "THEMES"  && <ThemeScreener onSelectStock={handleSelectStock} />}
+          {view === "MOVERS"  && <MoversList onSelectStock={handleSelectStock} />}
+        </div>
       </div>
 
-      {/* ── Content area ── */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {view === "SECTORS" && <BroadSectors />}
-        {view === "THEMES"  && <ThemeScreener />}
-        {view === "MOVERS"  && <MoversList />}
-      </div>
-    </div>
+      {/* ── Stock detail drawer ── */}
+      {selectedStock && (
+        <StockDetailDrawer
+          symbol={selectedStock.symbol}
+          displayName={selectedStock.name}
+          onClose={() => setSelectedStock(null)}
+        />
+      )}
+    </>
   );
 }

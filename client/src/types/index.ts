@@ -149,6 +149,43 @@ export interface SectorAnalysis {
   dataWindow: "2W" | "1D";
 }
 
+export interface QuarterlyResult {
+  period: string;
+  endDate: string;
+  revenue: number;
+  netProfit: number;
+  eps: number;
+  yoyRevenueGrowth: number | null;
+  yoyProfitGrowth: number | null;
+}
+
+export interface AnnualResult {
+  period: string;
+  endDate: string;
+  revenue: number;
+  netProfit: number;
+  eps: number;
+  yoyRevenueGrowth: number | null;
+  yoyProfitGrowth: number | null;
+}
+
+export interface StockFundamentals {
+  symbol: string;
+  name: string;
+  marketCap: number;
+  pe: number | null;
+  forwardPE: number | null;
+  eps: number | null;
+  pb: number | null;
+  bookValue: number | null;
+  ltp: number;
+  high52W: number | null;
+  low52W: number | null;
+  dividendYield: number | null;
+  quarterly: QuarterlyResult[];
+  annual: AnnualResult[];
+}
+
 export interface MoverStock {
   symbol: string;
   name: string;

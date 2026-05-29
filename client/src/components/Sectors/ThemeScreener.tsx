@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { RefreshCw, Flame, TrendingUp, TrendingDown, Minus, AlertCircle, Zap } from "lucide-react";
 import type { ThemeAnalysis, ThemeMomentum } from "../../types";
+import type { StockSelectHandler } from "./MoversList";
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ function BreadthBar({ breadth, count }: { breadth: number; count: number }) {
 
 // ── Theme Card ─────────────────────────────────────────────────────────────────
 
-function ThemeCard({ theme, rank }: { theme: ThemeAnalysis; rank: number }) {
+function ThemeCard({ theme, rank, onSelect }: { theme: ThemeAnalysis; rank: number; onSelect: StockSelectHandler }) {
   const [expanded, setExpanded] = useState(false);
   const conf = MOMENTUM_CONFIG[theme.momentum];
   const Icon = conf.icon;
@@ -114,9 +115,10 @@ function ThemeCard({ theme, rank }: { theme: ThemeAnalysis; rank: number }) {
       {theme.topPerformers.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-3 pb-2">
           {theme.topPerformers.map((s) => (
-            <div
+            <button
               key={s.symbol}
-              className="flex items-center gap-1.5 px-2 py-1 rounded bg-terminal-header border border-terminal-border/50"
+              onClick={() => onSelect(s.symbol, s.name)}
+              className="flex items-center gap-1.5 px-2 py-1 rounded bg-terminal-header border border-terminal-border/50 hover:border-terminal-border transition-colors"
             >
               <span className="text-[9px] font-medium text-terminal-dim tracking-wider">
                 {s.name}
@@ -130,7 +132,7 @@ function ThemeCard({ theme, rank }: { theme: ThemeAnalysis; rank: number }) {
               >
                 {fmt(s.return1M)}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -183,7 +185,7 @@ function ThemeCard({ theme, rank }: { theme: ThemeAnalysis; rank: number }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
-export function ThemeScreener() {
+export function ThemeScreener({ onSelectStock }: { onSelectStock: StockSelectHandler }) {
   const [filter, setFilter] = useState<MomentumFilter>("ALL");
 
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery<ThemeAnalysis[]>({
@@ -274,6 +276,7 @@ export function ThemeScreener() {
               key={theme.id}
               theme={theme}
               rank={data ? data.indexOf(theme) + 1 : i + 1}
+              onSelect={onSelectStock}
             />
           ))}
         </div>
