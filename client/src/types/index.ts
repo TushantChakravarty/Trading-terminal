@@ -125,6 +125,29 @@ export interface WatchlistItem {
 
 export type MarketStatus = "pre-open" | "open" | "closed" | "post-close";
 
+export interface SectorStock {
+  symbol: string;
+  name: string;
+  ltp: number;
+  changePct: number;
+}
+
+export interface SectorAnalysis {
+  id: string;
+  name: string;
+  shortName: string;
+  direction: "BULLISH" | "BEARISH" | "NEUTRAL";
+  avgChangePct: number;
+  activityScore: number;
+  topMovers: SectorStock[];
+  newsCount: number;
+  keyNews: string[];
+  analysis: string;
+  catalyst: string;
+  tradingAngle: string;
+  priceDataAvailable: boolean;
+}
+
 export interface StockIdea {
   id: string;
   symbol: string;

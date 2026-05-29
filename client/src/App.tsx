@@ -7,6 +7,7 @@ import { NewsFeed } from "./components/NewsFeed/NewsFeed";
 import { SignalPanel } from "./components/Signals/SignalPanel";
 import { AiSuggestions } from "./components/AiSuggestions/AiSuggestions";
 import { MarketEvents } from "./components/Events/MarketEvents";
+import { HotSectors } from "./components/Sectors/HotSectors";
 import { LoginPage } from "./components/Login/LoginPage";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useAuthStatus } from "./hooks/useAuthStatus";
@@ -22,6 +23,7 @@ function PanelTabs() {
     { id: "options" as const, label: "OPTIONS" },
     { id: "signals" as const, label: "SIGNALS" },
     { id: "news"    as const, label: "NEWS" },
+    { id: "sectors" as const, label: "SECTORS" },
     { id: "events"  as const, label: "EVENTS" },
     { id: "ai"      as const, label: "AI" },
   ];
@@ -54,6 +56,7 @@ function MobileNav() {
     { id: "options"   as const, label: "OPTIONS" },
     { id: "signals"   as const, label: "SIGNALS" },
     { id: "news"      as const, label: "NEWS" },
+    { id: "sectors"   as const, label: "SECTORS" },
     { id: "events"    as const, label: "EVENTS" },
     { id: "ai"        as const, label: "AI" },
   ];
@@ -146,6 +149,7 @@ function Terminal() {
             {activePanel === "options" && <OptionsChain />}
             {activePanel === "signals" && <SignalPanel />}
             {activePanel === "news"    && <NewsFeed />}
+            {activePanel === "sectors" && <HotSectors />}
             {activePanel === "events"  && <MarketEvents />}
             {activePanel === "ai"      && <AiSuggestions />}
           </div>
